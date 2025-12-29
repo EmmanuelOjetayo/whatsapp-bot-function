@@ -1,4 +1,4 @@
-import fetch from "node-fetch";
+
 import { Client, Databases, ID } from "appwrite";
 
 export default async ({ req, res, log, error }) => {
