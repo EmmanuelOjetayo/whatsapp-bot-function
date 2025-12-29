@@ -8,6 +8,6 @@
     "build": "npm install"
   },
   "dependencies": {
-    "appwrite": "^21.1.0"
+    "node-appwrite": "^14.1.0"
   }
 }
