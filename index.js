@@ -77,8 +77,8 @@ export default async ({ req, res, log, error }) => {
         ID.unique(),
         {
           user_number: from,
-          user_message: userText,
-          bot_reply: replyText,
+          message: userText,
+          reply: replyText,
           found_in_faq: foundInFaq,
           created_at: new Date().toISOString()
         }
