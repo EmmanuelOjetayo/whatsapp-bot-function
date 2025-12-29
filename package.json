@@ -1,16 +1,13 @@
 {
-  "name": "starter-template",
+  "name": "whatsapp-bot-function",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/main.js",
+  "description": "Appwrite function for WhatsApp bot",
+  "main": "index.js",
   "type": "module",
   "scripts": {
-    "format": "prettier --write ."
+    "build": "npm install"
   },
   "dependencies": {
-    "node-appwrite": "^14.1.0"
-  },
-  "devDependencies": {
-    "prettier": "^3.2.5"
+    "appwrite": "^21.1.0"
   }
 }
