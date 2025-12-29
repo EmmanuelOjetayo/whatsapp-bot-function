@@ -1,0 +1,14 @@
+{
+  "name": "whatsapp-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "node-appwrite": "^10.4.0"
+  }
+}
