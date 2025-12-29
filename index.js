@@ -1,4 +1,4 @@
-import { Client, Databases, ID } from "node-appwrite";
+import { Client, Databases, ID, Query } from "node-appwrite";
 
 export default async (context) => {
   const { req, res, log, error } = context;
@@ -44,7 +44,8 @@ export default async (context) => {
     // 4. Search FAQ Collection
     const faqResponse = await db.listDocuments(
       process.env.APPWRITE_DATABASE_ID,
-      process.env.APPWRITE_FAQ_COLLECTION_ID
+      process.env.APPWRITE_FAQ_COLLECTION_ID,
+      [Query.limit(1000)]
     );
 
     let replyText = "Sorry, I don't have an answer for that yet. Type 'help' to contact us.";
