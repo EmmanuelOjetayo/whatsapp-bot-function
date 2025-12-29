@@ -1,15 +1,16 @@
 {
-  "name": "whatsapp-bot",
+  "name": "starter-template",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "main": "src/main.js",
   "type": "module",
+  "scripts": {
+    "format": "prettier --write ."
+  },
   "dependencies": {
-    "node-fetch": "^3.3.2",
-    "node-appwrite": "^10.4.0"
+    "node-appwrite": "^14.1.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5"
   }
 }
-
