@@ -1,4 +1,4 @@
-import { Client, Databases, ID } from "appwrite";
+import { Client, Databases, ID } from "node-appwrite";
 
 export default async ({ req, res, log, error }) => {
   log("FUNCTION HIT - Method: " + req.method);
