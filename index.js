@@ -11,7 +11,7 @@ export default async ({ req, res, log, error }) => {
     const challenge = query['hub.challenge'];
 
 
-    const MY_VERIFY_TOKEN = "mysecret123"; 
+    const MY_VERIFY_TOKEN = process.env.My_Verify_Token; 
 
     if (mode === 'subscribe' && token === MY_VERIFY_TOKEN) {
       log("Webhook Verified by Meta!");
@@ -50,7 +50,7 @@ export default async ({ req, res, log, error }) => {
       process.env.APPWRITE_FAQ_COLLECTION_ID
     );
 
-    let replyText = "Sorry, I don't have an answer yet. Contact admin.";
+    let replyText = "Sorry, I don't have an answer yet. Contact admin. 09035449227";
     let foundInFaq = false;
 
     for (const faq of faqResponse.documents) {
