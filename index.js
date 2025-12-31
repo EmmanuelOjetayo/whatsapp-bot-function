@@ -1,4 +1,4 @@
-import { Client, Databases, ID } from "node-appwrite";
+import { Client, Databases, ID, Query } from "node-appwrite";
 
 export default async ({ req, res, log, error }) => {
   log("FUNCTION HIT - Method: " + req.method);
@@ -47,7 +47,8 @@ export default async ({ req, res, log, error }) => {
     // FAQ Search Logic
     const faqResponse = await db.listDocuments(
       process.env.APPWRITE_DATABASE_ID,
-      process.env.APPWRITE_FAQ_COLLECTION_ID
+      process.env.APPWRITE_FAQ_COLLECTION_ID,
+      [Query.limit(1000)]
     );
 
     let replyText = "Sorry, I don't have an answer yet. Contact admin. 09035449227";
