@@ -1,68 +1,67 @@
-import { Client, Databases, ID, Query } from "node-appwrite";
+import { Client, Databases, ID } from "appwrite";
 
-export default async (context) => {
-  const { req, res, log, error } = context;
+export default async ({ req, res, log, error }) => {
+  log("FUNCTION HIT - Method: " + req.method);
 
-  // 1. WhatsApp Webhook Verification (Meta setup)
-  if (req.method === "GET") {
-    const mode = req.query["hub.mode"];
-    const token = req.query["hub.verify_token"];
-    const challenge = req.query["hub.challenge"];
+  // --- 1. HANDLE META VERIFICATION (GET) ---
+  if (req.method === 'GET') {
+    const query = req.query;
+    const mode = query['hub.mode'];
+    const token = query['hub.verify_token'];
+    const challenge = query['hub.challenge'];
 
-    if (mode === "subscribe" && token === process.env.WHATSAPP_VERIFY_TOKEN) {
-      log("Webhook Verified Successfully");
-      return res.text(challenge);
+
+    const MY_VERIFY_TOKEN = "mysecret123"; 
+
+    if (mode === 'subscribe' && token === MY_VERIFY_TOKEN) {
+      log("Webhook Verified by Meta!");
+      return res.text(challenge, 200); // Return ONLY the challenge string
+    } else {
+      error("Verification failed. Token mismatch.");
+      return res.text("Forbidden", 403);
     }
-    return res.text("Verification failed", 403);
   }
 
-  // 2. Main Logic for Incoming Messages
-  log("FUNCTION HIT: Processing message...");
-
+  // --- 2. HANDLE INCOMING MESSAGES (POST) ---
   try {
-    // Parse payload safely
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const message = body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
     if (!message) {
-      log("Payload received but no message found.");
+      log("No WhatsApp message found in payload");
       return res.json({ status: "ignored" });
     }
 
     const from = message.from;
-    const userText = (message.text?.body || "").toLowerCase().trim();
-    log(`Message from ${from}: "${userText}"`);
+    const userText = message.text?.body?.toLowerCase() || "";
+    log(`Incoming from ${from}: ${userText}`);
 
-    // 3. Initialize Server SDK
+    // Init Appwrite
     const client = new Client()
       .setEndpoint("https://cloud.appwrite.io/v1")
       .setProject(process.env.APPWRITE_PROJECT_ID)
-      .setKey(process.env.APPWRITE_API_KEY); // .setKey is used in node-appwrite
+      .setKey(process.env.APPWRITE_API_KEY);
 
     const db = new Databases(client);
 
-    // 4. Search FAQ Collection
+    // FAQ Search Logic
     const faqResponse = await db.listDocuments(
       process.env.APPWRITE_DATABASE_ID,
-      process.env.APPWRITE_FAQ_COLLECTION_ID,
-      [Query.limit(1000)]
+      process.env.APPWRITE_FAQ_COLLECTION_ID
     );
 
-    let replyText = "Sorry, I don't have an answer for that yet. Type 'help' to contact us.";
+    let replyText = "Sorry, I don't have an answer yet. Contact admin.";
     let foundInFaq = false;
 
     for (const faq of faqResponse.documents) {
-      const question = (faq.question || "").toLowerCase();
-      const keywords = (faq.keywords || "").toLowerCase();
-
-      if (question.includes(userText) || keywords.includes(userText) || userText.includes(question)) {
+      if (userText.includes(faq.question.toLowerCase()) || (faq.keywords && faq.keywords.toLowerCase().includes(userText))) {
         replyText = faq.answer;
         foundInFaq = true;
         break;
       }
     }
 
-    // 5. Always Log to Interactions Collection
+    // Save to Interactions
     await db.createDocument(
       process.env.APPWRITE_DATABASE_ID,
       process.env.APPWRITE_INTERACTIONS_COLLECTION_ID,
@@ -76,15 +75,12 @@ export default async (context) => {
       }
     );
 
-    // 6. Send Meta Reply (only if credentials exist)
+    // Send WhatsApp Reply
     if (process.env.WHATSAPP_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID) {
-      log("Sending response to Meta API...");
-      const waUrl = `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
-      
-      const response = await fetch(waUrl, {
+      await fetch(`https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -93,19 +89,12 @@ export default async (context) => {
           text: { body: replyText }
         })
       });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        error("Meta API Error: " + JSON.stringify(errData));
-      }
-    } else {
-      log("Meta credentials not set; skipping WhatsApp send.");
     }
 
-    return res.json({ status: "success", reply: replyText });
+    return res.json({ status: "success" });
 
   } catch (err) {
-    error("Fatal Function Error: " + err.message);
+    error("FUNCTION ERROR: " + err.message);
     return res.json({ status: "error", message: err.message }, 500);
   }
 };
